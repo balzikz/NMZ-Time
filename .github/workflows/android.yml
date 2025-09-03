@@ -1,29 +1,67 @@
-name: Build Android APK
+# Имя рабочего процесса, которое будет отображаться во вкладке "Actions" вашего репозитория
+name: Android CI Build
 
+# Триггеры: определяют, когда будет запускаться этот рабочий процесс
 on:
+  # Запускать при каждом push-событии в любую ветку
   push:
-    branches: [ "main" ]
+    branches: [ "**" ]
+  # Запускать при каждом pull request, нацеленном на любую ветку
   pull_request:
+    branches: [ "**" ]
+  # Позволяет запускать этот рабочий процесс вручную со вкладки "Actions"
+  workflow_dispatch:
 
+# Задания: определяют одну или несколько задач, которые будут выполняться
 jobs:
+  # Единственное задание в этом рабочем процессе, названное "build"
   build:
+    # Имя задания, которое будет отображаться в UI GitHub
+    name: Build Debug APK
+
+    # Runner: виртуальная машина, на которой будет выполняться задание.
+    # 'ubuntu-latest' — это экономичный и стандартный выбор для сборок Android.
     runs-on: ubuntu-latest
 
+    # Шаги: последовательность команд или действий, выполняемых в рамках задания
     steps:
-      - name: Checkout
+      # Шаг 1: Клонирование вашего репозитория
+      # 'actions/checkout@v4' — это стандартное действие для получения исходного кода
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      # Шаг 2: Настройка среды Java (JDK)
+      # Это критически важный шаг для сборки Android-проектов.
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          # Указание дистрибутива Java. 'temurin' (Eclipse Temurin) — надежный и популярный выбор.
           distribution: 'temurin'
+          # Указание версии Java. Современные плагины Android Gradle требуют JDK 17 или выше.
+          java-version: '17'
+          # Включение кэширования зависимостей Gradle для ускорения последующих сборок.
+          cache: 'gradle'
 
+      # Шаг 3: Предоставление прав на выполнение для Gradle Wrapper
+      # На Linux-системах скрипту 'gradlew' требуются права на выполнение.
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Шаг 4: Сборка debug APK
+      # 'assembleDebug' — это конкретная задача Gradle для создания отладочного APK.
+      # Она быстрее и более целенаправленна, чем общая задача 'build'.
       - name: Build with Gradle
-        run: ./gradlew assembleDebug
+        run:./gradlew assembleDebug
 
-      - name: Upload APK
+      # Шаг 5: Выгрузка собранного APK в качестве артефакта
+      # 'actions/upload-artifact@v4' сохраняет файлы из рабочего процесса.
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          # Имя артефакта, которое будет видно в UI GitHub.
+          name: nmz-time-debug-apk
+          # Путь к файлу, который нужно выгрузить.
+          # Используется шаблон для захвата APK из стандартной папки вывода.
+          path: app/build/outputs/apk/debug/*.apk
+          # Установка срока хранения артефакта (например, 7 дней).
+          retention-days: 7
