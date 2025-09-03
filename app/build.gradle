@@ -1,3 +1,9 @@
+def versionPropsFile = rootProject.file('version.properties')
+def versionProps = new Properties()
+versionProps.load(new FileInputStream(versionPropsFile))
+
+}
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -11,8 +17,8 @@ android {
         applicationId "com.example.nmz_time"
         minSdk 24
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode versionProps['majorVersion'].toInteger() * 10000 + versionProps['minorVersion'].toInteger() * 100 + versionProps['patchVersion'].toInteger()
+        versionName "${versionProps['majorVersion']}.${versionProps['minorVersion']}.${versionProps['patchVersion']}"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
