@@ -9,7 +9,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val textView = TextView(this)
-        textView.text = "Ассаламу алейкум!\nМоё первое приложение на Kotlin"
+        textView.text = "!"
         textView.textSize = 22f
 
         setContentView(textView)
